@@ -2,10 +2,15 @@
 
 import { useEffect, useEffectEvent, useState } from 'react'
 import { ArrowRight, Eye, Pause, Play, Square, Volume2, VolumeX } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { useFocusSound } from '@/hooks/use-focus-sound'
-import { formatClock } from '@/lib/focus-stats'
-import type { PlanStep } from '@/lib/focus-plan'
+import { cn } from '../lib/utils'
+import { useFocusSound } from '../hooks/use-focus-sound'
+import { formatClock } from '../lib/focus-stats'
+
+type PlanStep = {
+  label: string
+  minutes: number
+  done?: boolean
+}
 
 type ActiveSessionProps = {
   title: string

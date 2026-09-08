@@ -1,8 +1,8 @@
 'use client'
 
 import { Flame, Timer } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { formatDuration, todayIndex, weekdayLabels, type FocusStats } from '@/lib/focus-stats'
+import { cn } from '../lib/utils'
+import { formatDuration, todayIndex, weekdayLabels, type FocusStats } from '../lib/focus-stats'
 
 export function StatsSection({ stats, compact = false }: { stats: FocusStats; compact?: boolean }) {
   const max = Math.max(60, ...stats.weeklyMinutes)

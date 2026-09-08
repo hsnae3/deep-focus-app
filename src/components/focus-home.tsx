@@ -2,9 +2,17 @@
 
 import { useState } from 'react'
 import { Loader2, Sparkles, Crown } from 'lucide-react'
-import { StatsSection } from '@/components/stats-section'
-import { PaywallModal } from '@/components/paywall-modal'
-import type { FocusStats } from '@/lib/focus-stats'
+import { StatsSection } from './stats-section'
+import { PaywallModal } from './paywall-modal'
+
+// `FocusStats` is used only for the component props here, so keep the type local
+// instead of depending on a missing module path.
+// `StatsSection` expects these fields to exist, so define them explicitly here.
+type FocusStats = {
+  todaySessions: number
+  totalFocusSeconds: number
+  weeklyMinutes: number[]
+}
 
 export type PlanSource = 'ai' | 'template'
 

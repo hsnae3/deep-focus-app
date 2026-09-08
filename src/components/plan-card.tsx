@@ -1,8 +1,8 @@
 'use client'
 
 import { Check, Clock, Lightbulb, Play, Sparkles } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import type { FocusPlan, PlanSource, PlanStep } from '@/lib/focus-plan'
+import { cn } from '../lib/utils'
+import type { FocusPlan, PlanSource, PlanStep } from '../lib/focus-plan'
 
 type PlanCardProps = {
   plan: FocusPlan

@@ -1,19 +1,19 @@
 'use client'
 
 import { useState } from 'react'
-import { ActiveSession } from '@/components/active-session'
-import { BottomNav, type Tab } from '@/components/bottom-nav'
-import { FocusHome } from '@/components/focus-home'
-import { SettingsView, type Settings } from '@/components/settings-view'
-import { StatsSection } from '@/components/stats-section'
-import type { FocusPlan, PlanSource, PlanStep } from '@/lib/focus-plan'
-import { initialStats, todayIndex, type FocusStats } from '@/lib/focus-stats'
+import { ActiveSession } from './active-session'
+import { BottomNav, type Tab } from './bottom-nav'
+import { FocusHome } from './focus-home'
+import { SettingsView, type Settings } from './settings-view'
+import { StatsSection } from './stats-section'
+import type { FocusPlan, PlanSource, PlanStep } from './focus-home'
+import { initialStats, todayIndex, type FocusStats } from '../lib/focus-stats'
 
 export function DeepFocusApp() {
   const [tab, setTab] = useState<Tab>('home')
   const [plan, setPlan] = useState<FocusPlan | null>(null)
   const [planSource, setPlanSource] = useState<PlanSource>('ai')
-  const [steps, setSteps] = useState<PlanStep[]>([])
+  const [steps, setSteps] = useState<Array<PlanStep & { done?: boolean }>>([])
   const [inSession, setInSession] = useState(false)
   const [stats, setStats] = useState<FocusStats>(initialStats)
   const [settings, setSettings] = useState<Settings>({
@@ -23,12 +23,12 @@ export function DeepFocusApp() {
   })
 
   function handlePlanGenerated(next: FocusPlan, source: PlanSource) {
-    setPlan(next)
-    setPlanSource(source)
-    const formattedSteps = next?.steps ? next.steps.map((s, idx) => ({ ...s, id: s.id || String(idx), done: false })) : []
-    setSteps(formattedSteps)
-    setTab('home')
-  }
+  setPlan(next)
+  setPlanSource(source)
+  const formattedSteps = next?.steps ? next.steps.map((s: PlanStep, idx: number) => ({ ...s, id: s.id || String(idx), done: false })) : []
+  setSteps(formattedSteps)
+  setTab('home')
+}
 
   function toggleStep(index: number) {
     setSteps((prev) => prev.map((s, i) => (i === index ? { ...s, done: !s.done } : s)))
@@ -56,12 +56,23 @@ export function DeepFocusApp() {
     })
   }
 
+  const activeSessionSteps = steps.map(({ done, ...step }) => {
+    const normalizedStep = step as any
+
+    return {
+      ...normalizedStep,
+      label: normalizedStep.label ?? normalizedStep.title ?? 'Step',
+      minutes: Number(normalizedStep.minutes ?? normalizedStep.duration ?? 0),
+      completed: normalizedStep.completed ?? false,
+    }
+  })
+
   if (inSession && plan) {
     return (
       <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-10">
         <ActiveSession
           title={plan.title}
-          steps={steps}
+          steps={activeSessionSteps}
           durationSeconds={settings.sessionMinutes * 60}
           alertsEnabled={settings.distractionAlerts}
           autoAdvance={settings.autoAdvanceSteps}
@@ -80,7 +91,7 @@ export function DeepFocusApp() {
             plan={plan}
             planSource={planSource}
             steps={steps}
-            stats={stats}
+            stats={stats as any}
             onPlanGenerated={handlePlanGenerated}
             onToggleStep={toggleStep}
             onStart={() => {
@@ -94,7 +105,7 @@ export function DeepFocusApp() {
         )}
         {tab === 'stats' && (
           <div className="pt-4">
-            <StatsSection stats={stats} />
+            <StatsSection stats={stats as any} />
           </div>
         )}
         {tab === 'settings' && <SettingsView settings={settings} onChange={setSettings} />}
