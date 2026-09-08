@@ -6,10 +6,11 @@ export type FocusStats = {
 }
 
 export const initialStats: FocusStats = {
-  todaySessions: 3,
-  totalFocusSeconds: 105 * 60,
-  weeklyMinutes: [50, 95, 25, 120, 75, 0, 105],
+  todaySessions: 0,
+  totalFocusSeconds: 0,
+  weeklyMinutes: [0, 0, 0, 0, 0, 0, 0],
 }
+
 
 export const weekdayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 

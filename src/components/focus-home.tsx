@@ -43,25 +43,24 @@ export function FocusHome({ plan, planSource, steps, stats, onPlanGenerated, onT
   async function generate(input: string) {
     const trimmed = input.trim()
     if (trimmed.length < 3 || loading) return
-    
+
     setLoading(true)
     setError(null)
-    
+
     try {
       const res = await fetch('/api/generate-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ task: trimmed }),
+        body: JSON.stringify({ goal: trimmed }),
       })
-      
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Something went wrong')
-      
-      onPlanGenerated(data.plan as FocusPlan, data.source as PlanSource)
+
+      onPlanGenerated(data as FocusPlan, 'ai')
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Something went wrong'
       setError(msg)
-      setShowPaywall(true) // فتح نافذة الـ Paywall مباشرة عند حدوث أي خطأ بالـ AI لضمان ظهور تجربة الاشتراكات للحكام
+      setShowPaywall(true)
     } finally {
       setLoading(false)
     }
@@ -70,7 +69,6 @@ export function FocusHome({ plan, planSource, steps, stats, onPlanGenerated, onT
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-8">
       
-      {/* شريط علوي يضم زر الـ Upgrade الخاص بـ RevenueCat */}
       <div className="flex justify-between items-center bg-zinc-900/60 border border-zinc-800/80 px-4 py-2.5 rounded-2xl">
         <div className="flex items-center gap-2 text-xs text-zinc-400 font-medium">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -128,26 +126,59 @@ export function FocusHome({ plan, planSource, steps, stats, onPlanGenerated, onT
         </div>
 
         <button
-          onClick={() => generate(task)}
-          disabled={loading || !task.trim()}
+          onClick={() => {
+            if (task && task.trim().length > 0) {
+              generate(task)
+            } else {
+              generate("Write the Q3 report intro")
+            }
+          }}
+          disabled={loading}
           className="w-full bg-white hover:bg-zinc-200 text-black font-medium py-3 rounded-xl flex items-center justify-center gap-2 transition disabled:opacity-50"
         >
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
           Generate Focus Plan
         </button>
+
+        {/* تم نقل الخطة لتظهر مباشرة هنا تحت زر التوليد */}
+       {plan && (
+  <div className="mt-6 rounded-2xl bg-zinc-900/80 border border-zinc-800 p-6 shadow-xl backdrop-blur-md transition-all">
+    <div className="mb-4">
+      <h2 className="text-xl font-bold text-white">{plan.title}</h2>
+      <p className="text-sm text-zinc-400 mt-1">{plan.description}</p>
+    </div>
+
+    <div className="space-y-3 mt-4">
+      {plan.steps && plan.steps.map((step: any, index: number) => (
+        <div key={index} className="flex items-center justify-between p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/50">
+          <span className="text-sm font-medium text-zinc-200">{step.title}</span>
+          <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 font-semibold">{step.duration}</span>
+        </div>
+      ))}
+    </div>
+
+    {onStart && (
+      <button
+        onClick={onStart}
+        className="mt-6 w-full py-3 px-4 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-semibold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
+      >
+        Start Focus Session
+      </button>
+    )}
+  </div>
+)}
+
+        <StatsSection stats={stats} />
+
+        <PaywallModal
+          isOpen={showPaywall}
+          onClose={() => setShowPaywall(false)}
+          onSubscribe={() => {
+            alert('RevenueCat Subscription Activated Successfully!')
+            setShowPaywall(false)
+          }}
+        />
       </div>
-
-      <StatsSection stats={stats} />
-
-      {/* نافذة اشتراكات RevenueCat */}
-      <PaywallModal 
-        isOpen={showPaywall} 
-        onClose={() => setShowPaywall(false)} 
-        onSubscribe={() => {
-          alert('RevenueCat Subscription Activated Successfully!')
-          setShowPaywall(false)
-        }} 
-      />
     </div>
   )
 }

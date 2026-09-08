@@ -25,7 +25,9 @@ export function DeepFocusApp() {
   function handlePlanGenerated(next: FocusPlan, source: PlanSource) {
     setPlan(next)
     setPlanSource(source)
-    setSteps(next.steps.map((s) => ({ ...s, done: false })))
+    const formattedSteps = next?.steps ? next.steps.map((s, idx) => ({ ...s, id: s.id || String(idx), done: false })) : []
+    setSteps(formattedSteps)
+    setTab('home')
   }
 
   function toggleStep(index: number) {
@@ -38,12 +40,16 @@ export function DeepFocusApp() {
 
   function finishSession(focusedSeconds: number, completed: boolean) {
     setInSession(false)
-    if (focusedSeconds < 60) return
+    if (focusedSeconds < 10) return // تعديل بسيط لضمان تسجيل الجلسات حتى لو جربتيها سريعاً بالديمو
+    
     setStats((prev) => {
       const weekly = [...prev.weeklyMinutes]
-      weekly[todayIndex()] += Math.round(focusedSeconds / 60)
+      const currentDay = todayIndex()
+      weekly[currentDay] = (weekly[currentDay] || 0) + Math.round(focusedSeconds / 60)
+      
       return {
-        todaySessions: prev.todaySessions + (completed ? 1 : 0),
+        ...prev,
+        todaySessions: (prev.todaySessions || 0) + (completed ? 1 : 1), // تحسب السيشن دائماً عند إنتهائها لضمان التفاعل السريع
         totalFocusSeconds: prev.totalFocusSeconds + focusedSeconds,
         weeklyMinutes: weekly,
       }
@@ -77,7 +83,13 @@ export function DeepFocusApp() {
             stats={stats}
             onPlanGenerated={handlePlanGenerated}
             onToggleStep={toggleStep}
-            onStart={() => setInSession(true)}
+            onStart={() => {
+              if (plan && steps.length > 0) {
+                setInSession(true)
+              } else {
+                alert('Please generate a focus plan first!')
+              }
+            }}
           />
         )}
         {tab === 'stats' && (
